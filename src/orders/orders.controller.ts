@@ -12,6 +12,7 @@ import { ORDERS_SERVICE } from 'src/config/services';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { CreateOrderDto, OrderPaginationDto } from './dto';
 import { firstValueFrom } from 'rxjs';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -24,12 +25,7 @@ export class OrdersController {
     return this.ordersClient.send('createOrder', createOrderDto);
   }
 
-  @Get()
-  findAll(@Query() orderpaginationDto: OrderPaginationDto) {
-    return this.ordersClient.send('findAllOrders', orderpaginationDto);
-  }
-
-  @Get(':id')
+  @Get('id/:id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     try {
       const order = await firstValueFrom(
@@ -42,13 +38,27 @@ export class OrdersController {
     }
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-  //   return this.ordersClient.send({ cmd: 'update_order' }, { id, ...updateOrderDto });
-  // }
+  @Get(':status')
+  async findAllByStatus(
+    @Param('status') status: string,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    try {
+      const orders = await firstValueFrom(
+        this.ordersClient.send('findAllOrders', {
+          ...paginationDto,
+          status,
+        }),
+      );
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.ordersClient.send({ cmd: 'remove_order' }, { id });
-  // }
+      return orders;
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get()
+  findAll(@Query() orderpaginationDto: OrderPaginationDto) {
+    return this.ordersClient.send('findAllOrders', orderpaginationDto);
+  }
 }
