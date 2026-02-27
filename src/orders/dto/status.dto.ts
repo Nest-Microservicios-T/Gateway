@@ -1,8 +1,8 @@
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty } from 'class-validator';
 import { OrderStatus, OrderStatusList } from '../enum/order.enum';
 
 export class StatusDto {
-  @IsOptional()
+  @IsNotEmpty()
   @IsEnum(OrderStatusList, {
     message: `valid status are: ${Object.values(OrderStatus).join(', ')}`,
   })

@@ -7,10 +7,11 @@ import {
   Inject,
   ParseUUIDPipe,
   Query,
+  Patch,
 } from '@nestjs/common';
 import { ORDERS_SERVICE } from 'src/config/services';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
-import { CreateOrderDto, OrderPaginationDto } from './dto';
+import { CreateOrderDto, OrderPaginationDto, StatusDto } from './dto';
 import { firstValueFrom } from 'rxjs';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 
@@ -60,5 +61,16 @@ export class OrdersController {
   @Get()
   findAll(@Query() orderpaginationDto: OrderPaginationDto) {
     return this.ordersClient.send('findAllOrders', orderpaginationDto);
+  }
+
+  @Patch(':id')
+  changeStatus(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() statusDto: StatusDto,
+  ) {
+    return {
+      id,
+      status: statusDto.status,
+    };
   }
 }
