@@ -32,11 +32,33 @@ export class OrdersController {
       const order = await firstValueFrom(
         this.ordersClient.send('findOneOrder', { id }),
       );
-
       return order;
     } catch (error) {
       throw new RpcException(error);
     }
+  }
+
+  @Patch(':id')
+  async changeStatus(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() statusDto: StatusDto,
+  ) {
+    try {
+      const result = await firstValueFrom(
+        this.ordersClient.send('changeOrderStatus', {
+          id,
+          status: statusDto.status,
+        }),
+      );
+      return result;
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get()
+  findAll(@Query() orderpaginationDto: OrderPaginationDto) {
+    return this.ordersClient.send('findAllOrders', orderpaginationDto);
   }
 
   @Get(':status')
@@ -51,26 +73,9 @@ export class OrdersController {
           status,
         }),
       );
-
       return orders;
     } catch (error) {
       throw new RpcException(error);
     }
-  }
-
-  @Get()
-  findAll(@Query() orderpaginationDto: OrderPaginationDto) {
-    return this.ordersClient.send('findAllOrders', orderpaginationDto);
-  }
-
-  @Patch(':id')
-  changeStatus(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() statusDto: StatusDto,
-  ) {
-    return {
-      id,
-      status: statusDto.status,
-    };
   }
 }
